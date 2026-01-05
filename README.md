@@ -1,153 +1,77 @@
-# Práctica: Análisis y explicación de una GitHub Action (Node.js CI)
+Práctica: Análisis y explicación de una GitHub Action
+Autor: Parbjyot Singh
+1. Descripción general de la GitHub Action
+Nombre del workflow: Node.js CI
 
-**Asignatura:** Despliegue de Aplicaciones Web  
-**Alumno:** Parbjyot Singh  
-**Opción elegida:** Opción A (GitHub Action creada por el alumno)
+¿Qué problema resuelve?
+Implementa un flujo de Integración Continua (CI) que valida automáticamente cada cambio subido al repositorio. Asegura que el proyecto se puede instalar y que supera las pruebas antes de llegar a producción, evitando integrar errores ("bugs").
 
----
+¿En qué tipo de proyectos se puede usar?
+En proyectos basados en Node.js y JavaScript, como servidores backend (Express, Fastify), aplicaciones frontend (React, Vue) o librerías NPM.
 
-## 1. Descripción General de la GitHub Action
+¿Por qué se ha elegido esta action?
+Porque la automatización de pruebas es fundamental en la cultura DevOps. Elimina los errores humanos y soluciona el clásico problema de "en mi máquina funciona".
 
-### ¿Qué problema resuelve?
-En el desarrollo de software colaborativo, es común que al integrar código nuevo se introduzcan errores ("bugs") que rompen funcionalidades existentes.  
-Esta GitHub Action implementa un flujo de **Integración Continua (CI)** que valida automáticamente cada cambio subido al repositorio, asegurando que el proyecto se puede instalar y que supera las pruebas antes de llegar a producción.
+2. Ubicación del workflow
+Ruta: .github/workflows/
 
-### ¿En qué tipo de proyectos se puede usar?
-Este workflow está diseñado para proyectos basados en **Node.js** y **JavaScript**, como:
+Archivo YAML: node-js.yml
 
-- Servidores backend (Express, Fastify, NestJS)
-- Aplicaciones frontend (React, Vue, Angular)
-- Librerías o paquetes NPM
+3. Explicación paso a paso del workflow (archivo YAML)
+name
+Define el nombre visible del workflow en la pestaña Actions: "Node.js CI".
 
-### ¿Por qué se ha elegido esta action?
-Porque la automatización de pruebas es un pilar fundamental en la cultura **DevOps**, eliminando errores humanos y el problema de *“en mi máquina funciona”*.
+on (eventos que disparan la action)
+push a la rama main
 
----
+pull_request hacia la rama main
 
-## 2. Ubicación del Workflow
+jobs
+Contiene los trabajos que se ejecutan. En este caso hay un job llamado build-and-test.
 
-Para que GitHub ejecute la automatización, el archivo se encuentra en:
+runs-on
+Indica el sistema operativo del runner proporcionado por GitHub:
 
-- **Directorio:** `.github/workflows/`
-- **Archivo:** `node-js.yml`
+ubuntu-latest
 
----
+steps
+Lista ordenada de pasos que se ejecutan dentro del job de forma secuencial.
 
-## 3. Explicación paso a paso del Workflow
+Uso de uses o run
+uses: invoca acciones predefinidas (como actions/checkout@v4).
 
-A continuación se muestra el archivo completo del workflow:
+run: ejecuta comandos de terminal estándar (como npm install).
 
-```yaml
-name: Node.js CI
+4. Explicación detallada de los pasos
+Checkout del código (actions/checkout@v4) Descarga el código del repositorio y lo coloca en el entorno de trabajo del runner para poder trabajar con él.
 
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+Configurar Node.js (actions/setup-node@v4) Instala Node.js (versión 20) y configura las variables necesarias para usar los comandos node y npm.
 
-jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
+Instalar dependencias (npm install) Instala todas las dependencias definidas en package.json. Se usa npm install para dar flexibilidad.
 
-    steps:
-      - name: Checkout del código
-        uses: actions/checkout@v4
+Ejecutar Tests (npm test) Ejecuta las pruebas definidas en el proyecto. Si tiene éxito, finaliza correctamente; si falla, marca el workflow como error.
 
-      - name: Configurar Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Instalar dependencias
-        run: npm install
-
-      - name: Ejecutar Tests
-        run: npm test
-Desglose de componentes
-name: Nombre visible del workflow en GitHub Actions.
-
-on: Eventos que disparan la ejecución (push y pull_request).
-
-jobs: Conjunto de tareas a ejecutar.
-
-runs-on: Sistema operativo del runner.
-
-steps: Pasos ejecutados secuencialmente.
-
-uses: Acciones predefinidas.
-
-run: Comandos de terminal.
-
-4. Explicación Detallada de los Pasos
-A. Checkout del código
-yaml
-Copiar código
-- name: Checkout del código
-  uses: actions/checkout@v4
-Descarga el código del repositorio y lo coloca en el entorno de trabajo del runner.
-
-B. Configurar Node.js
-yaml
-Copiar código
-- name: Configurar Node.js
-  uses: actions/setup-node@v4
-  with:
-    node-version: '20'
-Instala Node.js versión 20 y configura las variables necesarias para usar node y npm.
-
-C. Instalar dependencias
-yaml
-Copiar código
-- name: Instalar dependencias
-  run: npm install
-Instala todas las dependencias definidas en package.json.
-
-Se utiliza npm install en lugar de npm ci para mayor flexibilidad en la práctica.
-
-D. Ejecutar Tests
-yaml
-Copiar código
-- name: Ejecutar Tests
-  run: npm test
-Ejecuta las pruebas definidas en el proyecto.
-
- Éxito: el workflow finaliza correctamente.
-
- Fallo: el workflow se detiene y se marca como error.
-
-5. Ejecución de la Action y Evidencias
+5. Ejecución de la action
 ¿Cuándo se ejecuta?
-La GitHub Action se ejecuta automáticamente cuando:
+Cuando se hace push a la rama main.
 
-Se hace push a la rama main
+Cuando se crea un pull request hacia main.
 
-Se crea un pull request hacia main
+Evidencias
+Ejecución exitosa: Se verifica en los logs que el script de prueba (test.js) realiza la operación correctamente.
 
-Ejecución exitosa
-La siguiente imagen muestra una ejecución correcta del workflow build-and-test:
+Bash
 
-
-
-Log de ejecución correcta
-bash
-Copiar código
 > proyecto@1.0.0 test
 > node test.js
 
 ÉXITO: 2 + 2 es 4
-Ejecución fallida
-Para comprobar el sistema, se introdujo un error intencionado.
-GitHub Actions detectó el fallo, detuvo la ejecución y marcó el workflow como fallido.
+<img width="2874" height="1420" alt="image" src="https://github.com/user-attachments/assets/ea3bfcb0-211e-479b-856d-1e8119823895" />
+
 
 6. Conclusiones
-Tras implementar este flujo de Integración Continua, se concluye que:
+Estandarización del entorno: El uso de ubuntu-latest garantiza pruebas consistentes.
 
-Estandarización del entorno:
-El uso de ubuntu-latest garantiza pruebas consistentes.
+Mejora de la calidad: Ningún cambio defectuoso puede llegar a producción.
 
-Mejora de la calidad del código:
-Ningún cambio defectuoso puede llegar a producción.
-
-Automatización profesional:
-Se ha implementado una solución real usada en entornos DevOps.
+Automatización profesional: Se implementa una solución real propia de entornos DevOps.
