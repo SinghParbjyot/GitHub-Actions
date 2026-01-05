@@ -83,59 +83,83 @@ uses: Invoca acciones prefabricadas de la comunidad (como hacer checkout del có
 
 run: Ejecuta comandos de terminal estándar (shell bash).
 
-4. Explicación Detallada de los Pasos
-Cada paso dentro de la sección steps tiene una función específica:
+## 4. Explicación Detallada de los Pasos
 
-Paso 1: Checkout del código
-YAML
+El flujo de trabajo (`workflow`) se compone de una secuencia lineal de tareas que se ejecutan en el servidor de GitHub. A continuación, se analiza técnicamente qué ocurre en cada fase definida dentro de la sección `steps`:
 
+### A. Checkout del código
+```yaml
 - name: Checkout del código
   uses: actions/checkout@v4
-¿Qué hace? La máquina virtual de GitHub inicia vacía. Este paso utiliza la acción oficial actions/checkout para conectarse al repositorio, descargar (clonar) el código fuente y colocarlo en el directorio de trabajo del runner.
+Acción utilizada: actions/checkout@v4 (Oficial de GitHub).
 
-Paso 2: Configurar Node.js
+Funcionamiento: Cuando la máquina virtual (Runner) inicia, está completamente vacía. Este paso es fundamental porque se autentica en el repositorio, descarga la rama actual y coloca los archivos en el directorio de trabajo ($GITHUB_WORKSPACE). Sin este paso, los siguientes comandos no encontrarían el archivo package.json.
+
+## B. Configurar Node.js
 YAML
 
 - name: Configurar Node.js
   uses: actions/setup-node@v4
   with:
     node-version: '20'
-¿Qué hace? Utiliza la acción oficial actions/setup-node para preparar el entorno. Descarga e instala la versión 20 de Node.js, asegurando que las herramientas como npm estén disponibles.
+Acción utilizada: actions/setup-node@v4 (Oficial de GitHub).
 
-Paso 3: Instalar dependencias
+Funcionamiento: Prepara el entorno de ejecución (Runtime). Descarga e instala el binario de Node.js en su versión 20.x y configura las variables de entorno (PATH) necesarias para poder utilizar los comandos node y npm en la terminal del sistema.
+
+## C. Instalar dependencias
 YAML
 
 - name: Instalar dependencias
   run: npm install
-¿Qué hace? Ejecuta el comando de instalación de paquetes. Lee el archivo package.json y descarga las librerías necesarias para que el proyecto funcione. Se utiliza npm install para permitir flexibilidad si no existe un archivo de bloqueo estricto.
+Comando ejecutado: npm install
 
-Paso 4: Ejecutar Tests
+Funcionamiento: Este comando lee el archivo de configuración package.json del proyecto y descarga todas las librerías necesarias en la carpeta node_modules.
+
+Nota técnica: Se ha optado por npm install en lugar de npm ci para ofrecer mayor flexibilidad durante la práctica, permitiendo la instalación de dependencias incluso si no existe un archivo de bloqueo (package-lock.json) sincronizado.
+
+## D. Ejecutar Tests
 YAML
 
 - name: Ejecutar Tests
   run: npm test
-¿Qué hace? Ejecuta el script de pruebas definido en el proyecto (node test.js).
+Comando ejecutado: npm test
 
-Si el script finaliza con código 0, GitHub interpreta que los tests pasaron .
+Funcionamiento: Ejecuta el script de pruebas definido en el proyecto. Es el punto crítico de validación:
 
-Si finaliza con código 1 (error), GitHub marca el workflow como fallido  y alerta al usuario.
+Éxito: Si el test pasa correctamente, el proceso devuelve un "código de salida 0" y GitHub marca el paso en verde .
 
-5. Ejecución de la Action y Evidencias
-¿Cuándo y cómo se ejecuta?
-La ejecución es automática. No requiere intervención manual. Se dispara inmediatamente después de hacer un git push a la rama principal.
+Fallo: Si el test falla, el proceso devuelve un código de error (ej. 1). GitHub detecta esto, detiene inmediatamente el workflow y lo marca en rojo , notificando el error.
 
-Evidencias de Ejecución
-1. Visión general de ejecuciones: En esta captura se puede observar el historial de ejecuciones. Se aprecia cómo la action detecta tanto el éxito como el fallo en función del código subido.
+## 5. Ejecución de la Action y Evidencias
+## ¿Cuándo se ejecuta?
+La automatización está configurada para dispararse sin intervención humana (eventos on) en dos situaciones:
 
-2. Detalle de una ejecución exitosa: A continuación, se muestra el log del paso "Ejecutar Tests". Se observa que el script test.js realizó la validación matemática correctamente (2 + 2 = 4) y el proceso terminó con éxito.
+Push: Cada vez que se sube código nuevo a la rama main.
 
-3. Simulación de error: Para probar la robustez, se forzó un error en el código. La Action detectó el fallo y detuvo el proceso, impidiendo que el código defectuoso fuera validado.
+Pull Request: Cada vez que se intenta fusionar una rama externa hacia main.
 
-6. Conclusiones
-La realización de esta práctica ha permitido extraer las siguientes conclusiones:
+Evidencias de funcionamiento
+A continuación se presentan las evidencias de la ejecución en la consola de GitHub Actions:
 
-Fiabilidad: GitHub Actions permite estandarizar el entorno de pruebas. Al usar ubuntu-latest, eliminamos la incertidumbre de las configuraciones locales de cada programador.
+## 1. Ejecución Exitosa (Success)
+En esta captura se verifica que el código es correcto. El script de prueba test.js realizó la operación matemática esperada (2+2=4) y todos los pasos se completaron satisfactoriamente.
 
-Protección: El workflow actúa como un "filtro de calidad". Si los tests no pasan, el código no se considera válido, lo que protege la integridad del proyecto.
+Detalle del log observado:
 
-Simplicidad: Con un archivo YAML de menos de 30 líneas, hemos implementado un sistema completo de Integración Continua (CI) que es el estándar en la industria del software actual.
+Plaintext
+
+> proyecto@1.0.0 test
+> node test.js
+
+ÉXITO: 2 + 2 es 4
+## 2. Ejecución Fallida (Failure)
+Para demostrar la capacidad de protección del sistema, se introdujo un error intencional en el código. Como muestra la imagen, la GitHub Action detectó el fallo lógico, detuvo el despliegue y alertó del error.
+
+## 6. Conclusiones
+Tras el desarrollo de esta práctica y la implementación del flujo de Integración Continua (CI), se concluye lo siguiente:
+
+Estandarización del Entorno: El uso de runs-on: ubuntu-latest garantiza que el código siempre se prueba en un entorno limpio y neutral, eliminando los falsos positivos derivados de configuraciones locales ("en mi máquina funciona").
+
+Aumento de la Calidad: La automatización actúa como un filtro de calidad obligatorio. Impide que errores humanos o descuidos lleguen a la rama principal de producción, ya que el sistema rechaza automáticamente cualquier código que no pase los tests.
+
+Eficiencia: Se ha logrado automatizar una tarea repetitiva (el testing) con un archivo de configuración YAML sencillo y mantenible, lo cual es una de las competencias clave en el perfil de un desarrollador moderno o ingeniero DevOps.
