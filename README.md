@@ -90,4 +90,6 @@ Se verifica en los logs que el script de prueba (`test.js`) realiza la operació
 > node test.js
 
 ÉXITO: 2 + 2 es 4
+```
+
 <img width="2874" height="1420" alt="image" src="https://github.com/user-attachments/assets/297c2dce-00bd-4b14-8adb-d97db3b5420c" />
