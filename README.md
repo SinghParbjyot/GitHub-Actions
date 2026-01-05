@@ -84,84 +84,120 @@ uses: Invoca acciones prefabricadas de la comunidad (como hacer checkout del có
 
 run: Ejecuta comandos de terminal estándar (shell bash).
 ---
+🔹 PUNTO 4 – Explicación Detallada de los Pasos (CORREGIDO)
 ## 4. Explicación Detallada de los Pasos
 
-El flujo de trabajo (`workflow`) se compone de una secuencia lineal de tareas que se ejecutan en el servidor de GitHub. A continuación, se analiza técnicamente qué ocurre en cada fase definida dentro de la sección `steps`:
----
+El flujo de trabajo (`workflow`) se compone de una secuencia lineal de tareas que se ejecutan en los servidores de GitHub Actions. A continuación, se explica cada paso definido en la sección `steps`:
+
+A. Checkout del código
 ### A. Checkout del código
 ```yaml
 - name: Checkout del código
   uses: actions/checkout@v4
-Acción utilizada: actions/checkout@v4 (Oficial de GitHub).
+
+
+Acción utilizada: actions/checkout@v4 (oficial de GitHub).
+
+Funcionamiento:
+Cuando el runner se inicia, no contiene ningún archivo del repositorio. Este paso descarga el código de la rama activa y lo coloca en el directorio de trabajo ($GITHUB_WORKSPACE), permitiendo que los siguientes pasos accedan a package.json y al resto del proyecto.
+
+
 ---
-Funcionamiento: Cuando la máquina virtual (Runner) inicia, está completamente vacía. Este paso es fundamental porque se autentica en el repositorio, descarga la rama actual y coloca los archivos en el directorio de trabajo ($GITHUB_WORKSPACE). Sin este paso, los siguientes comandos no encontrarían el archivo package.json.
 
-## B. Configurar Node.js
-YAML
-
+### B. Configurar Node.js
+```md
+### B. Configurar Node.js
+```yaml
 - name: Configurar Node.js
   uses: actions/setup-node@v4
   with:
     node-version: '20'
-Acción utilizada: actions/setup-node@v4 (Oficial de GitHub).
 
-Funcionamiento: Prepara el entorno de ejecución (Runtime). Descarga e instala el binario de Node.js en su versión 20.x y configura las variables de entorno (PATH) necesarias para poder utilizar los comandos node y npm en la terminal del sistema.
+
+Acción utilizada: actions/setup-node@v4.
+
+Funcionamiento:
+Instala Node.js versión 20 y configura las variables de entorno necesarias para usar node y npm en el sistema.
+
+
 ---
-## C. Instalar dependencias
-YAML
 
+### C. Instalar dependencias
+```md
+### C. Instalar dependencias
+```yaml
 - name: Instalar dependencias
   run: npm install
-Comando ejecutado: npm install
 
-Funcionamiento: Este comando lee el archivo de configuración package.json del proyecto y descarga todas las librerías necesarias en la carpeta node_modules.
 
-Nota técnica: Se ha optado por npm install en lugar de npm ci para ofrecer mayor flexibilidad durante la práctica, permitiendo la instalación de dependencias incluso si no existe un archivo de bloqueo (package-lock.json) sincronizado.
+Funcionamiento:
+Descarga todas las dependencias definidas en package.json dentro del directorio node_modules.
+
+Nota técnica:
+Se usa npm install en lugar de npm ci para permitir mayor flexibilidad durante la práctica.
+
+
 ---
-## D. Ejecutar Tests
-YAML
 
+### D. Ejecutar Tests
+```md
+### D. Ejecutar Tests
+```yaml
 - name: Ejecutar Tests
   run: npm test
-Comando ejecutado: npm test
 
-Funcionamiento: Ejecuta el script de pruebas definido en el proyecto. Es el punto crítico de validación:
 
-Éxito: Si el test pasa correctamente, el proceso devuelve un "código de salida 0" y GitHub marca el paso en verde .
+Funcionamiento:
 
-Fallo: Si el test falla, el proceso devuelve un código de error (ej. 1). GitHub detecta esto, detiene inmediatamente el workflow y lo marca en rojo , notificando el error.
+ Éxito: devuelve código 0 y el workflow finaliza correctamente.
+
+ Fallo: devuelve código distinto de 0, el workflow se detiene y se marca como error.
+
+
 ---
+
+## 🔹 **PUNTO 5 – Ejecución de la Action y Evidencias (CON IMAGEN)**
+
+```md
 ## 5. Ejecución de la Action y Evidencias
-## ¿Cuándo se ejecuta?
-La automatización está configurada para dispararse sin intervención humana (eventos on) en dos situaciones:
 
-Push: Cada vez que se sube código nuevo a la rama main.
+¿Cuándo se ejecuta?
+La GitHub Action se ejecuta automáticamente en los siguientes casos:
 
-Pull Request: Cada vez que se intenta fusionar una rama externa hacia main.
+- **Push:** al subir código a la rama `main`.
+- **Pull Request:** al solicitar la fusión hacia `main`.
 
-Evidencias de funcionamiento
-A continuación se presentan las evidencias de la ejecución en la consola de GitHub Actions:
----
-## 1. Ejecución Exitosa (Success)
-En esta captura se verifica que el código es correcto. El script de prueba test.js realizó la operación matemática esperada (2+2=4) y todos los pasos se completaron satisfactoriamente.
-
-Detalle del log observado:
-
-Plaintext
-
+Evidencia de ejecución correcta
+A continuación se muestra una ejecución exitosa del workflow `build-and-test`, donde todos los pasos se completan correctamente:
+<img width="2880" height="1344" alt="image" src="https://github.com/user-attachments/assets/7ac3b284-0be4-4e36-a774-31716e15b8ad" />
+Ejemplo de log exitoso
+```bash
 > proyecto@1.0.0 test
 > node test.js
----
+
 ÉXITO: 2 + 2 es 4
-## 2. Ejecución Fallida (Failure)
-Para demostrar la capacidad de protección del sistema, se introdujo un error intencional en el código. Como muestra la imagen, la GitHub Action detectó el fallo lógico, detuvo el despliegue y alertó del error.
+
+
 ---
+
+### Ejecución fallida (prueba de seguridad)
+
+```md
+Para comprobar el correcto funcionamiento del sistema, se introdujo un error intencionado en el código.  
+GitHub Actions detectó el fallo, detuvo la ejecución y marcó el workflow como fallido.
+
+🔹 PUNTO 6 – Conclusiones (MEJORADO Y LIMPIO)
 ## 6. Conclusiones
-Tras el desarrollo de esta práctica y la implementación del flujo de Integración Continua (CI), se concluye lo siguiente:
 
-Estandarización del Entorno: El uso de runs-on: ubuntu-latest garantiza que el código siempre se prueba en un entorno limpio y neutral, eliminando los falsos positivos derivados de configuraciones locales ("en mi máquina funciona").
+Tras la implementación del flujo de Integración Continua (CI), se pueden extraer las siguientes conclusiones:
 
-Aumento de la Calidad: La automatización actúa como un filtro de calidad obligatorio. Impide que errores humanos o descuidos lleguen a la rama principal de producción, ya que el sistema rechaza automáticamente cualquier código que no pase los tests.
 
-Eficiencia: Se ha logrado automatizar una tarea repetitiva (el testing) con un archivo de configuración YAML sencillo y mantenible, lo cual es una de las competencias clave en el perfil de un desarrollador moderno o ingeniero DevOps.
----
+Estandarización del entorno:
+El uso de ubuntu-latest garantiza que las pruebas se ejecutan siempre en un entorno limpio y controlado.
+
+Mejora de la calidad del código:
+La automatización evita que errores lleguen a la rama principal, actuando como un filtro de calidad obligatorio.
+
+Eficiencia y profesionalidad:
+Se ha automatizado el proceso de testing mediante un archivo YAML sencillo, siguiendo prácticas reales de DevOps utilizadas en entornos profesionales.
+
