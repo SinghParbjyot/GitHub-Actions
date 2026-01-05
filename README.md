@@ -1,77 +1,93 @@
-Práctica: Análisis y explicación de una GitHub Action
-Autor: Parbjyot Singh
-1. Descripción general de la GitHub Action
-Nombre del workflow: Node.js CI
+# Práctica: Análisis y explicación de una GitHub Action
 
-¿Qué problema resuelve?
-Implementa un flujo de Integración Continua (CI) que valida automáticamente cada cambio subido al repositorio. Asegura que el proyecto se puede instalar y que supera las pruebas antes de llegar a producción, evitando integrar errores ("bugs").
+| Asignatura | Despliegue de Aplicaciones Web |
+| :--- | :--- |
+| **Autor** | **Parbjyot Singh** |
+| **Opción** | **A** (GitHub Action creada por el alumno) |
+| **Tecnología**| Node.js CI |
 
-¿En qué tipo de proyectos se puede usar?
-En proyectos basados en Node.js y JavaScript, como servidores backend (Express, Fastify), aplicaciones frontend (React, Vue) o librerías NPM.
+---
 
-¿Por qué se ha elegido esta action?
-Porque la automatización de pruebas es fundamental en la cultura DevOps. Elimina los errores humanos y soluciona el clásico problema de "en mi máquina funciona".
+## 1. Descripción General
 
-2. Ubicación del workflow
-Ruta: .github/workflows/
+### ¿Qué problema resuelve?
+Implementa un flujo de **Integración Continua (CI)** que valida automáticamente cada cambio subido al repositorio. Asegura que el proyecto se puede instalar y que supera las pruebas antes de llegar a producción, evitando integrar errores ("bugs").
 
-Archivo YAML: node-js.yml
+### ¿En qué tipo de proyectos se puede usar?
+En proyectos basados en **Node.js** y **JavaScript**, tales como:
+* Servidores Backend (Express, Fastify).
+* Aplicaciones Frontend (React, Vue).
+* Librerías NPM.
 
-3. Explicación paso a paso del workflow (archivo YAML)
-name
-Define el nombre visible del workflow en la pestaña Actions: "Node.js CI".
+### ¿Por qué se ha elegido esta action?
+Porque la automatización de pruebas es fundamental en la cultura **DevOps**. Elimina los errores humanos y soluciona el clásico problema de *"en mi máquina funciona"*.
 
-on (eventos que disparan la action)
-push a la rama main
+---
 
-pull_request hacia la rama main
+## 2. Ubicación del Workflow
 
-jobs
-Contiene los trabajos que se ejecutan. En este caso hay un job llamado build-and-test.
+* **Ruta del directorio:** `.github/workflows/`
+* **Archivo YAML:** `node-js.yml`
 
-runs-on
-Indica el sistema operativo del runner proporcionado por GitHub:
+---
 
-ubuntu-latest
+## 3. Explicación paso a paso del Workflow
 
-steps
-Lista ordenada de pasos que se ejecutan dentro del job de forma secuencial.
+A continuación se analizan los componentes clave del archivo de configuración:
 
-Uso de uses o run
-uses: invoca acciones predefinidas (como actions/checkout@v4).
+* **`name`**: Define el nombre visible del workflow en la pestaña Actions: "Node.js CI".
+* **`on` (Eventos)**:
+    * `push`: Se dispara al subir cambios a la rama `main`.
+    * `pull_request`: Se dispara al abrir una solicitud hacia la rama `main`.
+* **`jobs`**: Contiene los trabajos que se ejecutan. En este caso hay un job llamado `build-and-test`.
+* **`runs-on`**: Indica el sistema operativo del runner proporcionado por GitHub: `ubuntu-latest`.
+* **`steps`**: Lista ordenada de pasos que se ejecutan dentro del job de forma secuencial.
 
-run: ejecuta comandos de terminal estándar (como npm install).
+### Diferencia entre `uses` y `run`:
+> * **`uses`**: Invoca acciones predefinidas (como `actions/checkout@v4`).
+> * **`run`**: Ejecuta comandos de terminal estándar (como `npm install`).
 
-4. Explicación detallada de los pasos
-Checkout del código (actions/checkout@v4) Descarga el código del repositorio y lo coloca en el entorno de trabajo del runner para poder trabajar con él.
+---
 
-Configurar Node.js (actions/setup-node@v4) Instala Node.js (versión 20) y configura las variables necesarias para usar los comandos node y npm.
+## 4. Explicación Detallada de los Pasos
 
-Instalar dependencias (npm install) Instala todas las dependencias definidas en package.json. Se usa npm install para dar flexibilidad.
+A continuación se detalla la función de cada paso configurado en el workflow:
 
-Ejecutar Tests (npm test) Ejecuta las pruebas definidas en el proyecto. Si tiene éxito, finaliza correctamente; si falla, marca el workflow como error.
+### A. Checkout del código
+**Acción:** `actions/checkout@v4`
+Descarga el código del repositorio y lo coloca en el entorno de trabajo del runner para poder trabajar con él.
 
-5. Ejecución de la action
-¿Cuándo se ejecuta?
-Cuando se hace push a la rama main.
+### B. Configurar Node.js
+**Acción:** `actions/setup-node@v4`
+Instala Node.js (versión 20) y configura las variables necesarias para usar los comandos `node` y `npm` en el sistema.
 
-Cuando se crea un pull request hacia main.
+### C. Instalar dependencias
+**Comando:** `npm install`
+Instala todas las dependencias definidas en el archivo `package.json`. Se usa `npm install` para dar flexibilidad en la práctica.
 
-Evidencias
-Ejecución exitosa: Se verifica en los logs que el script de prueba (test.js) realiza la operación correctamente.
+### D. Ejecutar Tests
+**Comando:** `npm test`
+Ejecuta las pruebas definidas en el proyecto.
+ **Éxito:** Si tiene éxito, finaliza correctamente.
+ **Fallo:** Si falla, marca el workflow como error y detiene el proceso.
 
-Bash
+---
 
+## 5. Ejecución y Evidencias
+
+### ¿Cuándo se ejecuta?
+El flujo se activa automáticamente en dos situaciones:
+1.  Cuando se hace **push** a la rama `main`.
+2.  Cuando se crea un **pull request** hacia `main`.
+
+### Evidencias de funcionamiento
+
+**Ejecución exitosa:**
+Se verifica en los logs que el script de prueba (`test.js`) realiza la operación matemática correctamente.
+
+```bash
 > proyecto@1.0.0 test
 > node test.js
 
 ÉXITO: 2 + 2 es 4
-<img width="2874" height="1420" alt="image" src="https://github.com/user-attachments/assets/ea3bfcb0-211e-479b-856d-1e8119823895" />
-
-
-6. Conclusiones
-Estandarización del entorno: El uso de ubuntu-latest garantiza pruebas consistentes.
-
-Mejora de la calidad: Ningún cambio defectuoso puede llegar a producción.
-
-Automatización profesional: Se implementa una solución real propia de entornos DevOps.
+<img width="2874" height="1420" alt="image" src="https://github.com/user-attachments/assets/297c2dce-00bd-4b14-8adb-d97db3b5420c" />
