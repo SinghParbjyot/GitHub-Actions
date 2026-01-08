@@ -1,4 +1,4 @@
-// Prueba de funcionamiento
+
 const suma = 2 + 2;
 
 if (suma === 4) {
