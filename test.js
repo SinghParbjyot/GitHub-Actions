@@ -1,5 +1,5 @@
 
-const suma = 2 + 2;
+const suma = 2 + 3;
 
 if (suma === 4) {
   console.log("Test Pasado: La suma de 2 + 2 es 4.");
